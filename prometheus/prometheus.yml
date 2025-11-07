@@ -1,0 +1,40 @@
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+  scrape_timeout: 10s
+
+# アラートルールファイルの読み込み
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
+# メトリクス収集設定
+scrape_configs:
+  # Prometheus自身の監視
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # SNMP Exporter経由でRTX830を監視
+  - job_name: 'rtx830'
+    static_configs:
+      - targets:
+        - '${RTX830_HOST}'  # RTX830のIPアドレス（環境変数から取得）
+    metrics_path: /snmp
+    params:
+      module: [rtx830]  # SNMP Exporterのモジュール名
+      auth: ['${SNMP_COMMUNITY}']  # SNMP Community String
+    relabel_configs:
+      # ターゲットアドレスをパラメータとして渡す
+      - source_labels: [__address__]
+        target_label: __param_target
+      # インスタンスラベルをターゲットアドレスに設定
+      - source_labels: [__param_target]
+        target_label: instance
+      # 実際のスクレイプ先をSNMP Exporterに変更
+      - target_label: __address__
+        replacement: snmp-exporter:9116
+
+  # SNMP Exporter自身の監視
+  - job_name: 'snmp-exporter'
+    static_configs:
+      - targets: ['snmp-exporter:9116']
