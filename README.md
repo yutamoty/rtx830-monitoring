@@ -144,6 +144,31 @@ docker-compose ps
 docker-compose logs
 ```
 
+## 📚 詳細ドキュメント
+
+より詳しい手順や設定方法は、以下のドキュメントを参照してください：
+
+- **[完全セットアップガイド](docs/setup-guide.md)** - ゼロから構築する詳細手順（所要時間: 50分）
+  - Grafana Cloudアカウント作成とAPIキー取得
+  - RTX830のSNMP設定（SNMPv2c/v3）
+  - Raspberry Piのセットアップと動作確認
+  - ダッシュボード作成とアラート設定
+
+- **[RTX830設定ガイド](docs/rtx830-config.md)** - SNMP設定の詳細
+  - Web GUI / CLI での設定方法
+  - SNMPv3セキュア設定
+  - 取得可能なMIB一覧
+
+- **[Grafana Cloud設定ガイド](docs/grafana-cloud.md)** - クラウド側の詳細設定
+  - データソース設定
+  - ダッシュボード作成（PromQL例付き）
+  - アラートルールと通知設定
+
+- **[復旧手順書](docs/recovery.md)** - 障害時の復旧手順（復旧時間: 15分）
+  - SDカード故障時の対応
+  - シナリオ別復旧手順
+  - 予防措置とチェックリスト
+
 ## ファイル構成
 
 ```
@@ -153,9 +178,14 @@ rtx830-monitoring/
 ├── docker-compose.yml     # Docker Compose設定
 ├── .env.example           # 環境変数サンプル
 ├── .env                   # 環境変数（要作成、Git管理外）
-└── alloy/
-    ├── config.alloy       # Alloy設定（SNMP収集 + Remote Write）
-    └── snmp.yml           # SNMP MIB定義
+├── alloy/
+│   ├── config.alloy       # Alloy設定（SNMP収集 + Remote Write）
+│   └── snmp.yml           # SNMP MIB定義
+└── docs/
+    ├── setup-guide.md     # 完全セットアップガイド
+    ├── rtx830-config.md   # RTX830設定詳細
+    ├── grafana-cloud.md   # Grafana Cloud設定詳細
+    └── recovery.md        # 復旧手順書
 ```
 
 ## 復旧手順
