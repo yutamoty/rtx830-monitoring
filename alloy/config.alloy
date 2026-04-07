@@ -10,7 +10,7 @@ prometheus.scrape "snmp_exporter" {
     {
       __address__ = "localhost:9116",
       __param_target = env("RTX830_HOST"),
-      __param_module = "if_mib_ifalias",
+      __param_module = "if_mib",
     },
   ]
 
