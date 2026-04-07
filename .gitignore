@@ -1,0 +1,38 @@
+# 環境変数ファイル（機密情報を含むため除外）
+.env
+
+# Docker関連
+docker-compose.override.yml
+
+# Grafanaデータ（Dockerボリュームで管理）
+grafana/data/
+
+# Prometheusデータ（Dockerボリュームで管理）
+prometheus/data/
+
+# ログファイル
+*.log
+
+# バックアップファイル
+*.bak
+*.backup
+backup/
+
+# 一時ファイル
+*.tmp
+*.swp
+*.swo
+*~
+
+# OS固有
+.DS_Store
+Thumbs.db
+
+# IDE設定
+.vscode/
+.idea/
+*.iml
+
+# テスト用一時ファイル
+test/
+tmp/

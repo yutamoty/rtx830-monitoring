@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  # Grafana Alloy - SNMP収集 + Grafana Cloud送信
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    restart: unless-stopped
+    ports:
+      - "${ALLOY_PORT:-12345}:12345"  # Alloy UI
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - ./alloy/snmp.yml:/etc/alloy/snmp.yml:ro
+    environment:
+      - ALLOY_CONFIG_FILE=/etc/alloy/config.alloy
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+    network_mode: host  # SNMPターゲット（RTX830）にアクセスするためhost networkを使用

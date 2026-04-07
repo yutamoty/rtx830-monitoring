@@ -1,0 +1,93 @@
+// Grafana Alloy Configuration for YAMAHA RTX830 Monitoring
+// SNMP収集 → Grafana Cloud Remote Write
+
+// ========================================
+// SNMP収集設定
+// ========================================
+
+// RTX830のSNMP収集
+prometheus.exporter.snmp "rtx830" {
+  // SNMPターゲット設定
+  config_file = "/etc/alloy/snmp.yml"
+
+  // RTX830のターゲット設定
+  target {
+    name    = "rtx830"
+    address = env("RTX830_HOST")
+    module  = "rtx830"
+    auth    = env("SNMP_COMMUNITY")
+  }
+}
+
+// SNMP Exporterからメトリクスをスクレイプ
+prometheus.scrape "rtx830" {
+  targets = prometheus.exporter.snmp.rtx830.targets
+
+  // スクレイプ設定
+  scrape_interval = "30s"
+  scrape_timeout  = "10s"
+
+  // ラベル追加
+  forward_to = [prometheus.relabel.rtx830.receiver]
+}
+
+// ラベル付け（デバイス識別用）
+prometheus.relabel "rtx830" {
+  // デバイス情報をラベルに追加
+  rule {
+    source_labels = ["__address__"]
+    target_label  = "device"
+    replacement   = "rtx830"
+  }
+
+  rule {
+    source_labels = ["__address__"]
+    target_label  = "instance"
+  }
+
+  rule {
+    source_labels = ["__address__"]
+    target_label  = "location"
+    replacement   = "home"  // 必要に応じて変更
+  }
+
+  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+}
+
+// ========================================
+// Grafana Cloud Remote Write設定
+// ========================================
+
+prometheus.remote_write "grafana_cloud" {
+  // Grafana CloudのPrometheusエンドポイント
+  endpoint {
+    url = env("GRAFANA_CLOUD_PROMETHEUS_URL")
+
+    // Basic認証設定
+    basic_auth {
+      username = env("GRAFANA_CLOUD_PROMETHEUS_USER")
+      password = env("GRAFANA_CLOUD_API_KEY")
+    }
+
+    // リトライ設定
+    queue_config {
+      capacity          = 10000
+      max_shards        = 10
+      max_samples_per_send = 5000
+    }
+  }
+}
+
+// ========================================
+// Alloy自身のメトリクス収集（オプション）
+// ========================================
+
+prometheus.scrape "alloy" {
+  targets = [{
+    __address__ = "localhost:12345",
+  }]
+
+  scrape_interval = "60s"
+
+  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+}

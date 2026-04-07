@@ -1,0 +1,67 @@
+# SNMP Exporter Configuration for YAMAHA RTX830
+# Grafana Alloy用のSNMP収集設定
+
+rtx830:
+  walk:
+    # システム基本情報 (RFC 1213 - MIB-II)
+    - 1.3.6.1.2.1.1.1      # sysDescr - システム説明
+    - 1.3.6.1.2.1.1.3      # sysUpTime - 起動時間
+    - 1.3.6.1.2.1.1.5      # sysName - システム名
+    - 1.3.6.1.2.1.1.6      # sysLocation - 設置場所
+
+    # インターフェース情報 (IF-MIB)
+    - 1.3.6.1.2.1.2.2.1.1  # ifIndex - インターフェースインデックス
+    - 1.3.6.1.2.1.2.2.1.2  # ifDescr - インターフェース説明
+    - 1.3.6.1.2.1.2.2.1.3  # ifType - インターフェースタイプ
+    - 1.3.6.1.2.1.2.2.1.5  # ifSpeed - インターフェース速度
+    - 1.3.6.1.2.1.2.2.1.7  # ifAdminStatus - 管理状態
+    - 1.3.6.1.2.1.2.2.1.8  # ifOperStatus - 動作状態
+    - 1.3.6.1.2.1.2.2.1.10 # ifInOctets - 受信バイト数
+    - 1.3.6.1.2.1.2.2.1.11 # ifInUcastPkts - 受信ユニキャストパケット
+    - 1.3.6.1.2.1.2.2.1.12 # ifInNUcastPkts - 受信非ユニキャストパケット
+    - 1.3.6.1.2.1.2.2.1.13 # ifInDiscards - 受信破棄パケット
+    - 1.3.6.1.2.1.2.2.1.14 # ifInErrors - 受信エラーパケット
+    - 1.3.6.1.2.1.2.2.1.16 # ifOutOctets - 送信バイト数
+    - 1.3.6.1.2.1.2.2.1.17 # ifOutUcastPkts - 送信ユニキャストパケット
+    - 1.3.6.1.2.1.2.2.1.18 # ifOutNUcastPkts - 送信非ユニキャストパケット
+    - 1.3.6.1.2.1.2.2.1.19 # ifOutDiscards - 送信破棄パケット
+    - 1.3.6.1.2.1.2.2.1.20 # ifOutErrors - 送信エラーパケット
+
+    # 拡張インターフェース情報 (IF-MIB)
+    - 1.3.6.1.2.1.31.1.1.1.1  # ifName - インターフェース名
+    - 1.3.6.1.2.1.31.1.1.1.6  # ifHCInOctets - 受信バイト数(64bit)
+    - 1.3.6.1.2.1.31.1.1.1.10 # ifHCOutOctets - 送信バイト数(64bit)
+    - 1.3.6.1.2.1.31.1.1.1.15 # ifHighSpeed - 高速インターフェース速度
+    - 1.3.6.1.2.1.31.1.1.1.18 # ifAlias - インターフェースエイリアス
+
+    # IP統計情報 (IP-MIB)
+    - 1.3.6.1.2.1.4.3      # ipInReceives - 受信IPパケット数
+    - 1.3.6.1.2.1.4.9      # ipInDelivers - 配送IPパケット数
+    - 1.3.6.1.2.1.4.10     # ipOutRequests - 送信要求パケット数
+    - 1.3.6.1.2.1.4.11     # ipOutDiscards - 送信破棄パケット数
+
+    # TCP統計情報 (TCP-MIB)
+    - 1.3.6.1.2.1.6.5      # tcpActiveOpens - アクティブオープン数
+    - 1.3.6.1.2.1.6.6      # tcpPassiveOpens - パッシブオープン数
+    - 1.3.6.1.2.1.6.9      # tcpCurrEstab - 確立済み接続数
+    - 1.3.6.1.2.1.6.10     # tcpInSegs - 受信セグメント数
+    - 1.3.6.1.2.1.6.11     # tcpOutSegs - 送信セグメント数
+
+    # UDP統計情報 (UDP-MIB)
+    - 1.3.6.1.2.1.7.1      # udpInDatagrams - 受信データグラム数
+    - 1.3.6.1.2.1.7.4      # udpOutDatagrams - 送信データグラム数
+
+    # ICMP統計情報 (IP-MIB)
+    - 1.3.6.1.2.1.5.1      # icmpInMsgs - 受信ICMPメッセージ数
+    - 1.3.6.1.2.1.5.14     # icmpOutMsgs - 送信ICMPメッセージ数
+
+    # ホストリソース (HOST-RESOURCES-MIB)
+    - 1.3.6.1.2.1.25.2.3.1.2  # hrStorageDescr - ストレージ説明
+    - 1.3.6.1.2.1.25.2.3.1.3  # hrStorageAllocationUnits - アロケーションユニット
+    - 1.3.6.1.2.1.25.2.3.1.4  # hrStorageSize - ストレージサイズ
+    - 1.3.6.1.2.1.25.2.3.1.5  # hrStorageUsed - 使用ストレージ
+    - 1.3.6.1.2.1.25.3.3.1.2  # hrProcessorLoad - CPU負荷率
+
+  version: 2  # SNMPv2c
+  auth:
+    community: public  # デフォルト値（実際の値は環境変数で上書き）
