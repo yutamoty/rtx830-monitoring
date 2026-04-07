@@ -1,23 +1,18 @@
 // Grafana Alloy Configuration for YAMAHA RTX830 Monitoring
-// SNMP収集 → Grafana Cloud Remote Write
+// SNMP Exporter → Alloy → Grafana Cloud
 
 // ========================================
-// SNMP収集設定
-// ========================================
-
-// RTX830のSNMP収集
-prometheus.exporter.snmp "rtx830" {
-  config_file = "/etc/alloy/snmp.yml"
-
-  target "rtx830" {
-    address = env("RTX830_HOST")
-    module  = "rtx830"
-  }
-}
-
 // SNMP Exporterからメトリクスをスクレイプ
-prometheus.scrape "rtx830" {
-  targets = prometheus.exporter.snmp.rtx830.targets
+// ========================================
+
+prometheus.scrape "snmp_exporter" {
+  targets = [
+    {
+      __address__ = "localhost:9116",
+      __param_target = env("RTX830_HOST"),
+      __param_module = "rtx830",
+    },
+  ]
 
   scrape_interval = "30s"
   scrape_timeout  = "10s"
@@ -28,20 +23,18 @@ prometheus.scrape "rtx830" {
 // ラベル付け（デバイス識別用）
 prometheus.relabel "rtx830" {
   rule {
-    source_labels = ["__address__"]
-    target_label  = "device"
-    replacement   = "rtx830"
-  }
-
-  rule {
-    source_labels = ["__address__"]
+    source_labels = ["__param_target"]
     target_label  = "instance"
   }
 
   rule {
-    source_labels = ["__address__"]
-    target_label  = "location"
-    replacement   = "home"
+    target_label = "device"
+    replacement  = "rtx830"
+  }
+
+  rule {
+    target_label = "location"
+    replacement  = "home"
   }
 
   forward_to = [prometheus.remote_write.grafana_cloud.receiver]

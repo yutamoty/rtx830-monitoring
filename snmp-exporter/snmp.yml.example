@@ -1,8 +1,8 @@
 # SNMP Exporter Configuration for YAMAHA RTX830
-# Grafana Alloy用のSNMP収集設定
+# Prometheus SNMP Exporter用の設定
 #
 # 使用方法:
-#   1. このファイルをコピー: cp alloy/snmp.yml.example alloy/snmp.yml
+#   1. このファイルをコピー: cp snmp-exporter/snmp.yml.example snmp-exporter/snmp.yml
 #   2. community の値をRTX830で設定したCommunity Stringに変更
 #   3. docker-compose up -d で起動
 

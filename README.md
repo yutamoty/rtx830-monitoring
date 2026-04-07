@@ -55,8 +55,8 @@ GRAFANA_CLOUD_API_KEY=glc_xxxxxxxxxxxxx
 ### 3. SNMP設定ファイルの作成
 
 ```bash
-cp alloy/snmp.yml.example alloy/snmp.yml
-nano alloy/snmp.yml
+cp snmp-exporter/snmp.yml.example snmp-exporter/snmp.yml
+nano snmp-exporter/snmp.yml
 ```
 
 `community` の値をRTX830で設定したCommunity Stringに変更：
