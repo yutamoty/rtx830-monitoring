@@ -2,16 +2,12 @@ version: '3.8'
 
 services:
   # SNMP Exporter - RTX830からSNMPデータを取得
+  # デフォルト設定を使用（if_mibモジュール）
   snmp-exporter:
     image: prom/snmp-exporter:latest
     container_name: snmp-exporter
     restart: unless-stopped
-    volumes:
-      - ./snmp-exporter/snmp.yml:/etc/snmp_exporter/snmp.yml:ro
-    command:
-      - '--config.file=/etc/snmp_exporter/snmp.yml'
     network_mode: host
-    # SNMP ExporterはRTX830にアクセスする必要があるためhost network
 
   # Grafana Alloy - メトリクスをスクレイプしてGrafana Cloudに送信
   alloy:

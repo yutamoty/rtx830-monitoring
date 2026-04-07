@@ -1,8 +1,6 @@
 # 環境変数ファイル（機密情報を含むため除外）
 .env
 
-# SNMP設定ファイル（Community String等の機密情報を含むため除外）
-snmp-exporter/snmp.yml
 
 # Docker関連
 docker-compose.override.yml
