@@ -64,4 +64,4 @@ rtx830:
 
   version: 2  # SNMPv2c
   auth:
-    community: public  # デフォルト値（実際の値は環境変数で上書き）
+    community: public  # デフォルト値（実際はRTX830側で設定したCommunity Stringに変更してください）

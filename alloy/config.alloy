@@ -7,15 +7,12 @@
 
 // RTX830のSNMP収集
 prometheus.exporter.snmp "rtx830" {
-  // SNMPターゲット設定
   config_file = "/etc/alloy/snmp.yml"
 
-  // RTX830のターゲット設定
-  target {
-    name    = "rtx830"
+  target "rtx830" {
     address = env("RTX830_HOST")
     module  = "rtx830"
-    auth    = env("SNMP_COMMUNITY")
+    walk_params = "rtx830"
   }
 }
 
