@@ -10,9 +10,19 @@ prometheus.exporter.snmp "rtx830" {
   config_file = "/etc/alloy/snmp.yml"
 
   target "rtx830" {
-    address = env("RTX830_HOST")
-    module  = "rtx830"
-    walk_params = "rtx830"
+    address     = env("RTX830_HOST")
+    module      = "rtx830"
+    walk_params = "rtx830_auth"
+  }
+
+  // SNMP認証設定（SNMPv2c）
+  walk_param "rtx830_auth" {
+    version        = 2
+    auth           = {}
+    community      = env("SNMP_COMMUNITY")
+    max_repetitions = 25
+    retries        = 3
+    timeout        = "10s"
   }
 }
 
