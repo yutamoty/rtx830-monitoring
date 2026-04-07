@@ -1,15 +1,25 @@
 version: '3.8'
 
 services:
-  # Grafana Alloy - SNMP収集 + Grafana Cloud送信
+  # SNMP Exporter - RTX830からSNMPデータを取得
+  snmp-exporter:
+    image: prom/snmp-exporter:latest
+    container_name: snmp-exporter
+    restart: unless-stopped
+    volumes:
+      - ./snmp-exporter/snmp.yml:/etc/snmp_exporter/snmp.yml:ro
+    command:
+      - '--config.file=/etc/snmp_exporter/snmp.yml'
+    network_mode: host
+    # SNMP ExporterはRTX830にアクセスする必要があるためhost network
+
+  # Grafana Alloy - メトリクスをスクレイプしてGrafana Cloudに送信
   alloy:
     image: grafana/alloy:latest
     container_name: alloy
     restart: unless-stopped
-    # network_mode: host の場合、ports指定は不要（ホストのネットワークを直接使用）
     volumes:
       - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
-      - ./alloy/snmp.yml:/etc/alloy/snmp.yml:ro
     environment:
       - ALLOY_CONFIG_FILE=/etc/alloy/config.alloy
     command:
@@ -17,4 +27,6 @@ services:
       - /etc/alloy/config.alloy
       - --server.http.listen-addr=0.0.0.0:12345
       - --storage.path=/var/lib/alloy/data
-    network_mode: host  # SNMPターゲット（RTX830）にアクセスするためhost networkを使用
+    network_mode: host
+    depends_on:
+      - snmp-exporter
