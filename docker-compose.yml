@@ -18,6 +18,10 @@ services:
       - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
     environment:
       - ALLOY_CONFIG_FILE=/etc/alloy/config.alloy
+      - RTX830_HOST=${RTX830_HOST}
+      - GRAFANA_CLOUD_PROMETHEUS_URL=${GRAFANA_CLOUD_PROMETHEUS_URL}
+      - GRAFANA_CLOUD_PROMETHEUS_USER=${GRAFANA_CLOUD_PROMETHEUS_USER}
+      - GRAFANA_CLOUD_API_KEY=${GRAFANA_CLOUD_API_KEY}
     command:
       - run
       - /etc/alloy/config.alloy
