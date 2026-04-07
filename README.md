@@ -52,38 +52,24 @@ GRAFANA_CLOUD_PROMETHEUS_USER=123456
 GRAFANA_CLOUD_API_KEY=glc_xxxxxxxxxxxxx
 ```
 
-### 3. SNMP設定ファイルの作成
-
-```bash
-cp snmp-exporter/snmp.yml.example snmp-exporter/snmp.yml
-nano snmp-exporter/snmp.yml
-```
-
-`community` の値をRTX830で設定したCommunity Stringに変更：
-
-```yaml
-rtx830:
-  version: 2
-  auth:
-    community: your_secret_community_string  # ここを変更
-```
-
-### 4. RTX830のSNMP設定
+### 3. RTX830のSNMP設定
 
 RTX830で以下を設定してください：
 
 ```
-snmp community read-only your_community_string
+snmp community read-only public
 snmp host <Raspberry_PiのIPアドレス>
 ```
 
-### 5. コンテナの起動
+⚠️ **Community Stringについて**: SNMP Exporterはデフォルトで`public`を使用します。セキュリティ上、RTX830側で異なるCommunity Stringを使いたい場合は、SNMP Exporterのカスタム設定が必要です（現在の構成では`public`のみ対応）。
+
+### 4. コンテナの起動
 
 ```bash
 docker-compose up -d
 ```
 
-### 6. 動作確認
+### 5. 動作確認
 
 #### Alloy UIで確認
 ```
