@@ -46,16 +46,29 @@ nano .env
 # RTX830のIPアドレス
 RTX830_HOST=192.168.1.1
 
-# SNMP Community String
-SNMP_COMMUNITY=your_community_string
-
 # Grafana Cloud設定（Grafana Cloudから取得）
 GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-prod-xx-xxx-xxx.grafana.net/api/prom/push
 GRAFANA_CLOUD_PROMETHEUS_USER=123456
 GRAFANA_CLOUD_API_KEY=glc_xxxxxxxxxxxxx
 ```
 
-### 3. RTX830のSNMP設定
+### 3. SNMP設定ファイルの作成
+
+```bash
+cp alloy/snmp.yml.example alloy/snmp.yml
+nano alloy/snmp.yml
+```
+
+`community` の値をRTX830で設定したCommunity Stringに変更：
+
+```yaml
+rtx830:
+  version: 2
+  auth:
+    community: your_secret_community_string  # ここを変更
+```
+
+### 4. RTX830のSNMP設定
 
 RTX830で以下を設定してください：
 
@@ -64,13 +77,13 @@ snmp community read-only your_community_string
 snmp host <Raspberry_PiのIPアドレス>
 ```
 
-### 4. コンテナの起動
+### 5. コンテナの起動
 
 ```bash
 docker-compose up -d
 ```
 
-### 5. 動作確認
+### 6. 動作確認
 
 #### Alloy UIで確認
 ```

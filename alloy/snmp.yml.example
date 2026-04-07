@@ -1,10 +1,15 @@
 # SNMP Exporter Configuration for YAMAHA RTX830
 # Grafana Alloy用のSNMP収集設定
+#
+# 使用方法:
+#   1. このファイルをコピー: cp alloy/snmp.yml.example alloy/snmp.yml
+#   2. community の値をRTX830で設定したCommunity Stringに変更
+#   3. docker-compose up -d で起動
 
 rtx830:
   version: 2  # SNMPv2c
   auth:
-    community: public  # ⚠️ RTX830で設定したCommunity Stringに直接変更してください
+    community: public  # ⚠️ RTX830で設定したCommunity Stringに変更してください
   walk:
     # システム基本情報 (RFC 1213 - MIB-II)
     - 1.3.6.1.2.1.1.1      # sysDescr - システム説明
