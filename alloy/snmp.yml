@@ -1,5 +1,5 @@
 # SNMP Exporter Configuration for YAMAHA RTX830
-# このファイルはRTX830から取得するSNMPメトリクスを定義します
+# Grafana Alloy用のSNMP収集設定
 
 rtx830:
   walk:
@@ -61,47 +61,6 @@ rtx830:
     - 1.3.6.1.2.1.25.2.3.1.4  # hrStorageSize - ストレージサイズ
     - 1.3.6.1.2.1.25.2.3.1.5  # hrStorageUsed - 使用ストレージ
     - 1.3.6.1.2.1.25.3.3.1.2  # hrProcessorLoad - CPU負荷率
-
-  get:
-    # 個別取得が必要な値
-    - 1.3.6.1.2.1.1.1.0    # sysDescr
-    - 1.3.6.1.2.1.1.3.0    # sysUpTime
-    - 1.3.6.1.2.1.1.5.0    # sysName
-
-  metrics:
-    # メトリクスのオーバーライド設定（必要に応じて調整）
-    - name: sysUpTime
-      oid: 1.3.6.1.2.1.1.3
-      type: gauge
-      help: System uptime in hundredths of a second
-
-    - name: ifInOctets
-      oid: 1.3.6.1.2.1.2.2.1.10
-      type: counter
-      help: Number of octets received on the interface
-      indexes:
-      - labelname: ifIndex
-        type: gauge
-      lookups:
-      - labels:
-        - ifIndex
-        labelname: ifDescr
-        oid: 1.3.6.1.2.1.2.2.1.2
-        type: DisplayString
-
-    - name: ifOutOctets
-      oid: 1.3.6.1.2.1.2.2.1.16
-      type: counter
-      help: Number of octets transmitted on the interface
-      indexes:
-      - labelname: ifIndex
-        type: gauge
-      lookups:
-      - labels:
-        - ifIndex
-        labelname: ifDescr
-        oid: 1.3.6.1.2.1.2.2.1.2
-        type: DisplayString
 
   version: 2  # SNMPv2c
   auth:

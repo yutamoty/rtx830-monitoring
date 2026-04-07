@@ -3,22 +3,30 @@
 ## プロジェクト概要
 
 このプロジェクトは、YAMAHA RTX830ルーターの包括的な監視システムを構築するためのものです。
-Prometheus + Grafana スタックを使用し、SNMP経由でRTX830から全ての監視可能なメトリクスを収集・可視化します。
+Grafana Alloy + Grafana Cloud スタックを使用し、SNMP経由でRTX830から全ての監視可能なメトリクスを収集・可視化します。
 
 ### 設計目標
 
 - **完全なコード管理**: すべての設定をGitで管理し、Infrastructure as Codeを実現
 - **高い復旧性**: SDカード故障時でも、このリポジトリから迅速に環境を再構築可能
 - **包括的な監視**: トラフィック、CPU、メモリ、セッション数、インターフェース状態など、取得可能な全ての情報を可視化
+- **クラウド管理**: Grafana Cloudでデータを保存し、ローカルストレージの障害リスクを最小化
 
 ## アーキテクチャ
 
 ```
-RTX830 (SNMP) ← [監視] ← Raspberry Pi
-                          ├── SNMP Exporter (Prometheus exporter)
-                          ├── Prometheus (メトリクス収集・保存)
-                          └── Grafana (可視化)
+RTX830 (SNMP) ← [監視] ← Raspberry Pi (Grafana Alloy) → Grafana Cloud
+                                                            ├── Metrics Storage
+                                                            └── Dashboard/Alerting
 ```
+
+### なぜGrafana Alloy + Cloudなのか？
+
+- **シンプル**: 1つのコンテナでSNMP収集からクラウド送信まで完結
+- **管理が楽**: Prometheusやローカルストレージの管理不要
+- **復旧が簡単**: データはクラウドに保存されるため、ラズパイ故障時も履歴データは安全
+- **コスト**: Grafana Cloud Free tier（10k series）で十分収まる
+- **スケーラブル**: 将来的に他のデバイスを追加しても同じ構成で対応可能
 
 ## 環境構成
 
@@ -27,9 +35,8 @@ RTX830 (SNMP) ← [監視] ← Raspberry Pi
 - **実行環境**: Raspberry Pi (Raspberry Pi OS)
 - **コンテナ**: Docker + Docker Compose
 - **監視スタック**:
-  - Prometheus: メトリクス収集・保存
-  - SNMP Exporter: SNMP → Prometheusメトリクス変換
-  - Grafana: ダッシュボード・可視化
+  - Grafana Alloy: SNMP収集 + Grafana Cloudへのメトリクス送信
+  - Grafana Cloud: メトリクス保存・ダッシュボード・アラート
 - **バージョン管理**: Git/GitHub
 
 ## ディレクトリ構造
@@ -40,25 +47,16 @@ rtx830-monitoring/
 ├── README.md                    # プロジェクト説明
 ├── docker-compose.yml           # Docker Compose設定
 ├── .env.example                 # 環境変数のサンプル
-├── prometheus/
-│   ├── prometheus.yml          # Prometheus設定
-│   └── rules/                  # アラートルール
-├── snmp-exporter/
-│   ├── snmp.yml               # SNMP Exporter設定（RTX830用）
-│   └── generator/             # snmp.yml生成用設定
-├── grafana/
-│   ├── provisioning/
-│   │   ├── datasources/       # データソース自動設定
-│   │   └── dashboards/        # ダッシュボード自動設定
-│   └── dashboards/
-│       └── rtx830.json        # RTX830監視ダッシュボード
+├── alloy/
+│   └── config.alloy            # Grafana Alloy設定（SNMP収集 + Remote Write）
 ├── scripts/
 │   ├── setup.sh               # 初回セットアップスクリプト
-│   ├── backup.sh              # バックアップスクリプト
+│   ├── backup.sh              # 設定バックアップスクリプト
 │   └── restore.sh             # リストアスクリプト
 └── docs/
     ├── setup-guide.md         # セットアップガイド
     ├── rtx830-config.md       # RTX830側の設定手順
+    ├── grafana-cloud.md       # Grafana Cloud設定手順
     └── recovery.md            # 復旧手順書
 ```
 
@@ -67,53 +65,58 @@ rtx830-monitoring/
 ### 基本情報
 - システムアップタイム
 - ファームウェアバージョン
-- シリアル番号
+- システム名、設置場所
 
 ### CPU/メモリ
-- CPU使用率
+- CPU使用率（hrProcessorLoad）
 - メモリ使用量
 - メモリ空き容量
 
 ### インターフェース
 - LAN/WANポート毎の情報
-  - トラフィック（送受信バイト/パケット数）
+  - トラフィック（送受信バイト/パケット数）- 64bit対応
   - エラー/廃棄パケット数
   - リンク状態（Up/Down）
   - 速度/Duplex設定
+  - インターフェース名とエイリアス
 
-### セッション/接続
-- セッション数（現在/最大）
-- NAT/NAPTセッション情報
-- VPNトンネル状態
+### プロトコル統計
+- IP統計（受信/送信パケット数）
+- TCP統計（接続数、アクティブ/パッシブオープン）
+- UDP統計（受信/送信データグラム数）
+- ICMP統計（受信/送信メッセージ数）
 
-### PPP/WAN接続
-- PPP接続状態
-- 接続時間
-- 送受信データ量
+### ストレージ
+- ストレージ使用量
+- ストレージタイプと容量
 
-### 温度・ハードウェア
-- 筐体温度
-- ファン状態（該当する場合）
+### 制限事項
+- **NATセッション数**: SNMP非対応（Lua連携が必要）
 
 ## セットアップの流れ
 
-### 1. RTX830側の準備
+### 1. Grafana Cloud の準備
+- Grafana Cloud アカウント作成（Free tier）
+- APIキーの発行
+- Remote Write エンドポイントURLの取得
+
+### 2. RTX830側の準備
 - SNMP設定の有効化
 - Community String / SNMPv3ユーザーの設定
 - アクセス制御の設定
 
-### 2. Raspberry Pi側の準備
+### 3. Raspberry Pi側の準備
 - Docker / Docker Composeのインストール
 - このリポジトリのクローン
 - 環境変数の設定（`.env`ファイル作成）
 
-### 3. 監視スタックのデプロイ
+### 4. 監視スタックのデプロイ
 - `docker-compose up -d`でコンテナ起動
-- Grafanaへアクセスしてダッシュボード確認
+- Grafana Cloudでメトリクス受信確認
 
-### 4. 動作確認
-- Prometheusでメトリクス取得確認
-- Grafanaでグラフ表示確認
+### 5. ダッシュボード作成
+- Grafana Cloudでダッシュボード作成
+- 汎用SNMPダッシュボード（ID: 12366）をベースに調整
 
 ## 復旧手順
 
@@ -123,15 +126,19 @@ SDカード故障やシステム障害時の復旧手順：
 - 新しいRaspberry Pi OS環境
 - インターネット接続
 - GitHubへのアクセス権
+- Grafana Cloud アカウントとAPIキー
 
 ### 復旧ステップ
 1. 基本パッケージのインストール（Git, Docker, Docker Compose）
 2. リポジトリのクローン: `git clone https://github.com/yutamoty/rtx830-monitoring.git`
 3. 環境変数の設定（`.env`ファイルを作成）
-4. セットアップスクリプト実行: `./scripts/setup.sh`
-5. コンテナ起動: `docker-compose up -d`
+   - Grafana Cloud APIキーとエンドポイントを設定
+   - RTX830のIPアドレスとSNMP設定
+4. コンテナ起動: `docker-compose up -d`
+5. Grafana Cloudでメトリクス受信確認
 
-**目標復旧時間**: 30分以内（基本OS環境が整っている前提）
+**目標復旧時間**: 15分以内（基本OS環境が整っている前提）
+**データ**: Grafana Cloudに保存されているため、履歴データは失われない
 
 ## 環境変数
 
@@ -143,16 +150,13 @@ RTX830_HOST=192.168.1.1
 SNMP_COMMUNITY=public
 SNMP_VERSION=2c
 
-# Grafana設定
-GRAFANA_ADMIN_PASSWORD=<strong-password>
-GRAFANA_PORT=3000
+# Grafana Cloud設定
+GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-xxx.grafana.net/api/prom/push
+GRAFANA_CLOUD_PROMETHEUS_USER=123456
+GRAFANA_CLOUD_API_KEY=glc_xxxxxxxxxxxxxxxxxxxxx
 
-# Prometheus設定
-PROMETHEUS_PORT=9090
-PROMETHEUS_RETENTION=15d
-
-# SNMP Exporter設定
-SNMP_EXPORTER_PORT=9116
+# Grafana Alloy設定
+ALLOY_PORT=12345
 ```
 
 ## セキュリティ考慮事項
@@ -160,35 +164,49 @@ SNMP_EXPORTER_PORT=9116
 - `.env`ファイルは`.gitignore`に含め、Gitにコミットしない
 - SNMP Community Stringは強力なものを使用
 - 可能であればSNMPv3の使用を推奨
-- Grafana管理者パスワードは強力なものを設定
-- Raspberry PiのファイアウォールでPrometheus/Grafanaへのアクセスを制限
+- Grafana Cloud APIキーは厳重に管理
+- Raspberry PiのファイアウォールでAlloy管理ポートへのアクセスを制限
 
 ## メンテナンス
 
 ### バックアップ
-- Prometheusデータ: `./scripts/backup.sh prometheus`
-- Grafanaダッシュボード: Git管理されているため自動的にバックアップ
-- 設定ファイル: すべてGit管理
+- Alloy設定: Git管理されているため自動的にバックアップ
+- メトリクスデータ: Grafana Cloudに保存（手動バックアップ不要）
+- ダッシュボード: Grafana CloudからJSON exportで定期バックアップ推奨
 
 ### アップデート
 - Dockerイメージ: `docker-compose pull && docker-compose up -d`
-- 設定変更: ファイル編集後に`docker-compose restart <service>`
+- 設定変更: `alloy/config.alloy`編集後に`docker-compose restart`
 
 ## トラブルシューティング
 
 ### SNMPデータが取得できない
 - RTX830側のSNMP設定を確認
 - ネットワーク接続を確認（pingテスト）
-- SNMP Exporterのログを確認: `docker-compose logs snmp-exporter`
+- Alloyのログを確認: `docker-compose logs alloy`
 
-### Grafanaにアクセスできない
-- コンテナの起動状態を確認: `docker-compose ps`
+### Grafana Cloudにメトリクスが届かない
+- APIキーとエンドポイントURLを確認
+- Alloyのログでエラーを確認
+- Grafana CloudのData Sourcesページで接続状態を確認
+
+### コンテナが起動しない
 - ポートの競合を確認
-- ファイアウォール設定を確認
+- 設定ファイルの構文エラーを確認
+- ログを確認: `docker-compose logs`
 
-### ディスク容量不足
-- Prometheusの保持期間を調整（`PROMETHEUS_RETENTION`）
-- 古いデータの削除を検討
+## Grafana Cloudのコスト管理
+
+### Free Tierの制限
+- メトリクスシリーズ: 10,000 series
+- ログ: 50GB/月
+- トレース: 50GB/月
+
+### RTX830監視での推定使用量
+- システムメトリクス: ~20 series
+- インターフェースメトリクス: ~200 series（インターフェース数×メトリクス数）
+- プロトコル統計: ~50 series
+- **合計**: 約300 series程度（Free tierの3%）
 
 ## Claude Codeでの開発
 
@@ -196,25 +214,24 @@ SNMP_EXPORTER_PORT=9116
 
 ### よくあるタスク
 
-- **新しいメトリクスの追加**: `snmp-exporter/snmp.yml`を更新
-- **ダッシュボードの改善**: `grafana/dashboards/rtx830.json`を編集
-- **アラートルールの追加**: `prometheus/rules/`に新しいファイルを追加
-- **セットアップの自動化**: `scripts/`ディレクトリのスクリプトを改善
+- **新しいメトリクスの追加**: `alloy/config.alloy`を更新
+- **スクレイプ間隔の変更**: `alloy/config.alloy`のintervalを調整
+- **ダッシュボードの追加**: Grafana CloudでJSON exportしてリポジトリに追加
 
 ### Claude Codeへの依頼例
 
 ```
-「RTX830のVPNトンネル状態を監視するアラートを追加してください」
-「CPU使用率が80%を超えた時の通知を設定してください」
-「ダッシュボードに新しいパネルを追加してください」
+「RTX830のインターフェーストラフィックを5秒間隔で収集するように変更してください」
+「Alloyの設定にSNMPv3認証を追加してください」
+「新しいメトリクスをAlloy設定に追加してください」
 ```
 
 ## 参考リンク
 
 - [YAMAHA RTX830 コマンドリファレンス](http://www.rtpro.yamaha.co.jp/RT/manual/rt-common/index.html)
-- [Prometheus Documentation](https://prometheus.io/docs/)
-- [Grafana Documentation](https://grafana.com/docs/)
-- [SNMP Exporter Documentation](https://github.com/prometheus/snmp_exporter)
+- [Grafana Alloy Documentation](https://grafana.com/docs/alloy/latest/)
+- [Grafana Cloud Documentation](https://grafana.com/docs/grafana-cloud/)
+- [SNMP MIBs Reference](https://www.cisco.com/c/en/us/support/docs/ip/simple-network-management-protocol-snmp/7244-snmp-mibs.html)
 
 ## ライセンス
 
