@@ -4,7 +4,7 @@
 rtx830:
   version: 2  # SNMPv2c
   auth:
-    community: public  # デフォルト値（.envのSNMP_COMMUNITYで上書き）
+    community: public  # ⚠️ RTX830で設定したCommunity Stringに直接変更してください
   walk:
     # システム基本情報 (RFC 1213 - MIB-II)
     - 1.3.6.1.2.1.1.1      # sysDescr - システム説明
