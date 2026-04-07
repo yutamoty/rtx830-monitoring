@@ -6,8 +6,7 @@ services:
     image: grafana/alloy:latest
     container_name: alloy
     restart: unless-stopped
-    ports:
-      - "${ALLOY_PORT:-12345}:12345"  # Alloy UI
+    # network_mode: host の場合、ports指定は不要（ホストのネットワークを直接使用）
     volumes:
       - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
       - ./alloy/snmp.yml:/etc/alloy/snmp.yml:ro
