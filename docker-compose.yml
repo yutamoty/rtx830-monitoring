@@ -2,11 +2,15 @@ version: '3.8'
 
 services:
   # SNMP Exporter - RTX830からSNMPデータを取得
-  # デフォルト設定を使用（if_mibモジュール）
+  # カスタム snmp.yml を使用（if_mib + sysUpTime）
   snmp-exporter:
     image: prom/snmp-exporter:latest
     container_name: snmp-exporter
     restart: unless-stopped
+    volumes:
+      - ./snmp/snmp.yml:/etc/snmp_exporter/snmp.yml:ro
+    command:
+      - --config.file=/etc/snmp_exporter/snmp.yml
     network_mode: host
 
   # Prometheus - メトリクスをスクレイプしてGrafana Cloudに送信
