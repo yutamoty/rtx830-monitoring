@@ -1,21 +1,22 @@
 # RTX830 Monitoring with Grafana Cloud
 
-YAMAHA RTX830ルーターを**Grafana Alloy + Grafana Cloud**で監視するシステムです。
+YAMAHA RTX830ルーターを**Prometheus + SNMP Exporter + Grafana Cloud**で監視するシステムです。
 
 ## 特徴
 
-- 🚀 **シンプル**: 2コンテナ（SNMP Exporter + Grafana Alloy）で動作
-- ☁️ **クラウド管理**: データはGrafana Cloudに保存、ローカルストレージ不要
-- 🔄 **高い復旧性**: SDカード故障時も15分で復旧可能
-- 📊 **包括的監視**: インターフェーストラフィック、システム情報など可視化
-- 💰 **低コスト**: Grafana Cloud Free tier（10k series）で十分収まる
+- **シンプル**: 2コンテナ（SNMP Exporter + Prometheus）で動作
+- **クラウド管理**: データはGrafana Cloudに保存、ローカルストレージ不要
+- **高い復旧性**: SDカード故障時も15分で復旧可能
+- **包括的監視**: インターフェーストラフィック、システム情報など可視化
+- **低コスト**: Grafana Cloud Free tier（10k series）で十分収まる
+- **デバッグ容易**: Prometheus Web UI (localhost:9090) でPromQLテストやターゲット状態確認が可能
 
 ## アーキテクチャ
 
 ```
-RTX830 (SNMP) → SNMP Exporter → Grafana Alloy → Grafana Cloud
-                                                   ├── Metrics Storage
-                                                   └── Dashboard/Alerting
+RTX830 (SNMP) → SNMP Exporter → Prometheus → Grafana Cloud
+                                                ├── Metrics Storage
+                                                └── Dashboard/Alerting
 ```
 
 ## クイックスタート
@@ -68,8 +69,6 @@ snmpv2c host <Raspberry_PiのIPアドレス>
 save
 ```
 
-⚠️ **Community Stringについて**: SNMP Exporterはデフォルトで`public`を使用します。セキュリティ上、RTX830側で異なるCommunity Stringを使いたい場合は、SNMP Exporterのカスタム設定が必要です（現在の構成では`public`のみ対応）。
-
 ### 4. コンテナの起動
 
 ```bash
@@ -78,10 +77,13 @@ docker-compose up -d
 
 ### 5. 動作確認
 
-#### Alloy UIで確認
+#### Prometheus UIで確認
 ```
-http://<Raspberry_PiのIP>:12345
+http://<Raspberry_PiのIP>:9090
 ```
+
+- **Targets** ページでSNMP Exporterへのスクレイプが成功しているか確認
+- **Graph** ページでPromQLクエリをテスト
 
 #### Grafana Cloudで確認
 1. Grafana Cloudにログイン
@@ -121,7 +123,10 @@ http://<Raspberry_PiのIP>:12345
 
 ```bash
 # ログを確認
-docker-compose logs alloy
+docker-compose logs prometheus
+
+# Prometheus UIのTargetsページで状態確認
+# http://<Raspberry_PiのIP>:9090/targets
 
 # RTX830への接続確認
 ping <RTX830のIP>
@@ -133,8 +138,8 @@ snmpwalk -v2c -c <community> <RTX830のIP> system
 ### Grafana Cloudにデータが送信されない
 
 ```bash
-# Alloyのログでエラーを確認
-docker-compose logs alloy | grep -i error
+# Prometheusのログでremote_writeエラーを確認
+docker-compose logs prometheus | grep -i error
 
 # .envファイルの設定を確認
 cat .env
@@ -150,30 +155,14 @@ docker-compose ps
 docker-compose logs
 ```
 
-## 📚 詳細ドキュメント
+## 詳細ドキュメント
 
 より詳しい手順や設定方法は、以下のドキュメントを参照してください：
 
 - **[完全セットアップガイド](docs/setup-guide.md)** - ゼロから構築する詳細手順（所要時間: 50分）
-  - Grafana Cloudアカウント作成とAPIキー取得
-  - RTX830のSNMP設定（SNMPv2c/v3）
-  - Raspberry Piのセットアップと動作確認
-  - ダッシュボード作成とアラート設定
-
 - **[RTX830設定ガイド](docs/rtx830-config.md)** - SNMP設定の詳細
-  - Web GUI / CLI での設定方法
-  - SNMPv3セキュア設定
-  - 取得可能なMIB一覧
-
 - **[Grafana Cloud設定ガイド](docs/grafana-cloud.md)** - クラウド側の詳細設定
-  - データソース設定
-  - ダッシュボード作成（PromQL例付き）
-  - アラートルールと通知設定
-
 - **[復旧手順書](docs/recovery.md)** - 障害時の復旧手順（復旧時間: 15分）
-  - SDカード故障時の対応
-  - シナリオ別復旧手順
-  - 予防措置とチェックリスト
 
 ## ファイル構成
 
@@ -184,8 +173,9 @@ rtx830-monitoring/
 ├── docker-compose.yml     # Docker Compose設定
 ├── .env.example           # 環境変数サンプル
 ├── .env                   # 環境変数（要作成、Git管理外）
-├── alloy/
-│   └── config.alloy       # Alloy設定（scrape + Remote Write）
+├── prometheus/
+│   ├── prometheus.yml     # Prometheus設定（scrape + Remote Write）
+│   └── entrypoint.sh      # 環境変数展開 + 起動スクリプト
 └── docs/
     ├── setup-guide.md     # 完全セットアップガイド
     ├── rtx830-config.md   # RTX830設定詳細
@@ -228,5 +218,6 @@ MIT License
 ## 参考リンク
 
 - [YAMAHA RTX830 コマンドリファレンス](http://www.rtpro.yamaha.co.jp/RT/manual/rt-common/index.html)
-- [Grafana Alloy Documentation](https://grafana.com/docs/alloy/latest/)
+- [Prometheus Documentation](https://prometheus.io/docs/)
+- [SNMP Exporter](https://github.com/prometheus/snmp_exporter)
 - [Grafana Cloud](https://grafana.com/products/cloud/)

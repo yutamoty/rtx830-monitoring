@@ -95,7 +95,7 @@ GRAFANA_CLOUD_PROMETHEUS_USER=123456
 2. **"Create API key"** をクリック
 3. APIキー設定：
 
-   **Key name**: `rtx830-alloy`
+   **Key name**: `rtx830-prometheus`
    
    **Role**: `MetricsPublisher`（または `Admin`）
    
@@ -426,11 +426,11 @@ cat .env | grep GRAFANA_CLOUD_PROMETHEUS_URL
 cat .env | grep GRAFANA_CLOUD_API_KEY
 ```
 
-#### 確認3: Alloyログ
+#### 確認3: Prometheusログ
 
 ```bash
 # Remote Writeエラーを確認
-docker-compose logs alloy | grep -i "remote_write"
+docker-compose logs prometheus | grep -i "remote_write"
 ```
 
 ### 問題: ダッシュボードにデータが表示されない

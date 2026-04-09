@@ -48,7 +48,7 @@
 1. 左サイドバー → **"Security"** → **"API Keys"**
 2. **"Create API key"** をクリック
 3. 設定：
-   - **Key name**: `rtx830-alloy`
+   - **Key name**: `rtx830-prometheus`
    - **Role**: `MetricsPublisher` または `Admin`
    - **Time to live**: 無期限（または必要に応じて設定）
 4. **"Add"** をクリック
@@ -199,8 +199,8 @@ GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-prod-XX-XXXX.grafana.net/api/pro
 GRAFANA_CLOUD_PROMETHEUS_USER=123456
 GRAFANA_CLOUD_API_KEY=glc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-# Grafana Alloy設定
-ALLOY_PORT=12345
+# Prometheus設定
+PROMETHEUS_PORT=9090
 
 # タイムゾーン設定
 TZ=Asia/Tokyo
@@ -242,7 +242,7 @@ docker-compose up -d
 
 # 出力例:
 # Creating network "rtx830-monitoring_default" with the default driver
-# Creating alloy ... done
+# Creating prometheus ... done
 ```
 
 ### 4.2 コンテナの状態確認
@@ -253,37 +253,37 @@ docker-compose ps
 
 # 期待される出力:
 # NAME    STATE    PORTS
-# alloy   running  0.0.0.0:12345->12345/tcp
+# prometheus   running  (host network mode)
 ```
 
 ### 4.3 ログの確認
 
 ```bash
-# Alloyのログをリアルタイム表示
-docker-compose logs -f alloy
+# Prometheusのログをリアルタイム表示
+docker-compose logs -f prometheus
 
 # 正常な場合の出力例:
-# alloy | level=info msg="starting Alloy"
-# alloy | level=info msg="SNMP exporter started"
-# alloy | level=info msg="remote write client started"
+# prometheus | level=info msg="Server is ready to receive web requests."
+# prometheus | level=info msg="Starting TSDB"
+# prometheus | level=info msg="remote storage has been configured for remote_write"
 ```
 
 エラーがないか確認してください。
 
 **Ctrl + C** でログ表示を終了できます。
 
-### 4.4 Alloy UI での確認
+### 4.4 Prometheus UI での確認
 
 Webブラウザで以下にアクセス：
 
 ```
-http://<Raspberry_PiのIPアドレス>:12345
+http://<Raspberry_PiのIPアドレス>:9090
 ```
 
-Alloy の管理画面が表示され、以下が確認できます：
-- コンポーネントのステータス
-- 収集中のメトリクス
-- Remote Writeの状態
+Prometheus の管理画面で以下が確認できます：
+- **Status → Targets**: SNMP Exporterへのスクレイプ状態
+- **Graph**: PromQLクエリのテスト
+- **Status → Runtime & Build Information**: 設定の確認
 
 ### 4.5 Grafana Cloudでの確認
 
@@ -409,11 +409,10 @@ Alloy の管理画面が表示され、以下が確認できます：
 
 ```bash
 # ログを詳しく確認
-docker-compose logs alloy
+docker-compose logs prometheus
 
-# 設定ファイルの構文エラーをチェック
-docker run --rm -v $(pwd)/alloy:/etc/alloy grafana/alloy:latest \
-  run --dry-run /etc/alloy/config.alloy
+# Prometheus UIのTargetsページで確認
+# http://<Raspberry_PiのIP>:9090/targets
 ```
 
 ### 問題: SNMPデータが取得できない
@@ -425,15 +424,15 @@ ping -c 4 192.168.1.1
 # SNMP接続確認
 snmpwalk -v2c -c your_secret_community_string 192.168.1.1 system
 
-# Alloyログでエラー確認
-docker-compose logs alloy | grep -i error
+# Prometheusログでエラー確認
+docker-compose logs prometheus | grep -i error
 ```
 
 ### 問題: Grafana Cloudにデータが送信されない
 
 ```bash
 # Remote Writeのエラーを確認
-docker-compose logs alloy | grep -i "remote_write"
+docker-compose logs prometheus | grep -i "remote_write"
 
 # .envファイルの設定を再確認
 cat .env
@@ -468,24 +467,24 @@ docker-compose down
 ### 設定変更後の反映
 
 ```bash
-# config.alloy または snmp.yml を編集後
-nano alloy/config.alloy
+# prometheus.yml を編集後
+nano prometheus/prometheus.yml
 
 # コンテナを再起動
-docker-compose restart alloy
+docker-compose restart prometheus
 ```
 
 ### ログの確認
 
 ```bash
 # 最新100行のログを表示
-docker-compose logs --tail=100 alloy
+docker-compose logs --tail=100 prometheus
 
 # リアルタイムでログを表示
-docker-compose logs -f alloy
+docker-compose logs -f prometheus
 
 # エラーのみをフィルター
-docker-compose logs alloy | grep -i error
+docker-compose logs prometheus | grep -i error
 ```
 
 ### Dockerイメージの更新
@@ -508,7 +507,7 @@ docker-compose up -d
 
 - ✅ Grafana Cloud にメトリクスが届いている
 - ✅ ダッシュボードでRTX830の状態が可視化できている
-- ✅ Alloyコンテナが正常に動作している
+- ✅ Prometheusコンテナが正常に動作している
 
 ### 次のステップ
 

@@ -109,7 +109,7 @@ GRAFANA_CLOUD_PROMETHEUS_USER=123456
 GRAFANA_CLOUD_API_KEY=glc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # その他
-ALLOY_PORT=12345
+PROMETHEUS_PORT=9090
 TZ=Asia/Tokyo
 ```
 
@@ -127,7 +127,7 @@ docker-compose ps
 
 ```bash
 # ログを確認
-docker-compose logs alloy | tail -50
+docker-compose logs prometheus | tail -50
 
 # Grafana Cloudで確認
 # → Explore → ifHCInOctets を検索
@@ -153,7 +153,7 @@ docker-compose up -d
 
 # 確認
 docker-compose ps
-docker-compose logs alloy
+docker-compose logs prometheus
 ```
 
 ---
@@ -181,7 +181,7 @@ docker-compose down
 docker-compose up -d
 
 # 確認
-docker-compose logs alloy
+docker-compose logs prometheus
 ```
 
 ---
@@ -245,7 +245,7 @@ docker-compose logs alloy
 
 ### 監視レベル
 
-- [ ] Alloy UIにアクセスできる（http://192.168.1.100:12345）
+- [ ] Prometheus UIにアクセスできる（http://192.168.1.100:9090）
 - [ ] Grafana Cloudでメトリクスが表示される
 - [ ] ダッシュボードにデータが表示される
 - [ ] アラートが動作している
@@ -274,14 +274,14 @@ sudo sh get-docker.sh
 
 ```bash
 # 詳細なログを確認
-docker-compose logs alloy
+docker-compose logs prometheus
 
 # 設定ファイルの構文チェック
-docker run --rm -v $(pwd)/alloy:/etc/alloy grafana/alloy:latest \
-  run --dry-run /etc/alloy/config.alloy
+# Prometheus UIのTargetsページで確認
+# http://<Raspberry_PiのIP>:9090/targets
 
 # ポート競合の確認
-sudo netstat -tlnp | grep 12345
+sudo netstat -tlnp | grep 9090
 
 # コンテナを完全削除して再作成
 docker-compose down -v
@@ -297,9 +297,9 @@ cat .env | grep GRAFANA_CLOUD
 # ネットワーク接続の確認
 curl -I https://prometheus-prod-XX-XXXX.grafana.net
 
-# Alloyログでエラー確認
-docker-compose logs alloy | grep -i error
-docker-compose logs alloy | grep -i "remote_write"
+# Prometheusログでエラー確認
+docker-compose logs prometheus | grep -i error
+docker-compose logs prometheus | grep -i "remote_write"
 ```
 
 ### 問題: SNMPデータが取得できない
@@ -414,7 +414,7 @@ docker-compose up -d
 
 echo "=== 復旧完了 ==="
 echo "動作確認: docker-compose ps"
-echo "ログ確認: docker-compose logs alloy"
+echo "ログ確認: docker-compose logs prometheus"
 ```
 
 ---
