@@ -4,387 +4,967 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "links": [],
   "panels": [
     {
-      "datasource": {
-        "type": "prometheus"
-      },
+      "datasource": {"type": "prometheus"},
+      "title": "System Uptime",
+      "type": "stat",
+      "id": 1,
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "sysUpTime{device=\"rtx830\"} / 100",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "Interfaces Up",
+      "type": "stat",
+      "id": 2,
+      "gridPos": {"h": 4, "w": 4, "x": 4, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
             ]
           },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "count(ifOperStatus{device=\"rtx830\"} == 1)",
+          "legendFormat": "Up",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "count(ifOperStatus{device=\"rtx830\"})",
+          "legendFormat": "Total",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "Total Inbound",
+      "type": "stat",
+      "id": 3,
+      "gridPos": {"h": 4, "w": 4, "x": 8, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]},
           "unit": "bps"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 0
-      },
-      "id": 1,
       "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto",
+        "wideLayout": true
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus"
-          },
-          "expr": "rate(ifHCInOctets{device=\"rtx830\", ifDescr=~\"LAN.*|WAN.*\"}[5m]) * 8",
-          "legendFormat": "{{ifDescr}} In",
+          "datasource": {"type": "prometheus"},
+          "expr": "sum(rate(ifHCInOctets{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])) * 8",
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus"
-          },
-          "expr": "rate(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"LAN.*|WAN.*\"}[5m]) * 8",
-          "legendFormat": "{{ifDescr}} Out",
-          "refId": "B"
         }
-      ],
-      "title": "Interface Traffic (LAN/WAN)",
-      "type": "timeseries"
+      ]
     },
     {
-      "datasource": {
-        "type": "prometheus"
-      },
+      "datasource": {"type": "prometheus"},
+      "title": "Total Outbound",
+      "type": "stat",
+      "id": 4,
+      "gridPos": {"h": 4, "w": 4, "x": 12, "y": 0},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "options": {
-                "1": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "UP"
-                },
-                "2": {
-                  "color": "red",
-                  "index": 1,
-                  "text": "DOWN"
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "purple", "value": null}]},
+          "unit": "bps"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 0
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "id": 2,
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "sum(rate(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])) * 8",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "Scrape Status",
+      "type": "stat",
+      "id": 5,
+      "gridPos": {"h": 4, "w": 4, "x": 16, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {"color": "red", "index": 0, "text": "DOWN"},
+                "1": {"color": "green", "index": 1, "text": "UP"}
+              }
+            }
+          ],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}
+        },
+        "overrides": []
+      },
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": ""
-        },
-        "showPercentChange": false,
+        "orientation": "horizontal",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus"
-          },
-          "expr": "ifOperStatus{device=\"rtx830\", ifDescr=~\"LAN.*|WAN.*\"}",
-          "legendFormat": "{{ifDescr}}",
+          "datasource": {"type": "prometheus"},
+          "expr": "up{job=\"snmp-rtx830\"}",
           "refId": "A"
         }
-      ],
-      "title": "Interface Status",
-      "type": "stat"
+      ]
     },
     {
-      "datasource": {
-        "type": "prometheus"
-      },
+      "datasource": {"type": "prometheus"},
+      "title": "Total Errors (5m rate)",
+      "type": "stat",
+      "id": 6,
+      "gridPos": {"h": 4, "w": 4, "x": 20, "y": 0},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
+          "color": {"mode": "thresholds"},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 0.01},
+              {"color": "red", "value": 1}
             ]
           },
           "unit": "pps"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 8
-      },
-      "id": 3,
       "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto",
+        "wideLayout": true
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus"
-          },
-          "expr": "rate(ifHCInUcastPkts{device=\"rtx830\", ifDescr=~\"LAN.*|WAN.*\"}[5m])",
-          "legendFormat": "{{ifDescr}} In",
+          "datasource": {"type": "prometheus"},
+          "expr": "sum(rate(ifInErrors{device=\"rtx830\"}[5m]) + rate(ifOutErrors{device=\"rtx830\"}[5m]))",
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus"
-          },
-          "expr": "rate(ifHCOutUcastPkts{device=\"rtx830\", ifDescr=~\"LAN.*|WAN.*\"}[5m])",
-          "legendFormat": "{{ifDescr}} Out",
-          "refId": "B"
         }
-      ],
-      "title": "Packet Rate (LAN/WAN)",
-      "type": "timeseries"
+      ]
     },
     {
-      "datasource": {
-        "type": "prometheus"
-      },
+      "datasource": {"type": "prometheus"},
+      "title": "Interface Traffic (In = positive / Out = negative)",
+      "type": "timeseries",
+      "id": 10,
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 4},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
+          "color": {"mode": "palette-classic"},
           "custom": {
             "axisBorderShow": false,
-            "axisCenteredZero": false,
+            "axisCenteredZero": true,
             "axisColorMode": "text",
-            "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            },
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
             "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
+            "scaleDistribution": {"type": "linear"},
             "showPoints": "never",
             "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "stacking": {"group": "A", "mode": "none"},
+            "thresholdsStyle": {"mode": "off"}
+          },
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "rate(ifHCInOctets{device=\"rtx830\", ifDescr=~\"$interface\"}[5m]) * 8",
+          "legendFormat": "{{ifDescr}} In",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "-rate(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"$interface\"}[5m]) * 8",
+          "legendFormat": "{{ifDescr}} Out",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "Top 5 Interfaces - Inbound",
+      "type": "timeseries",
+      "id": 20,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 13},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "topk(5, rate(ifHCInOctets{device=\"rtx830\"}[5m]) * 8)",
+          "legendFormat": "{{ifDescr}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "Top 5 Interfaces - Outbound",
+      "type": "timeseries",
+      "id": 21,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 13},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "topk(5, rate(ifHCOutOctets{device=\"rtx830\"}[5m]) * 8)",
+          "legendFormat": "{{ifDescr}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "Packet Rate - Inbound",
+      "type": "timeseries",
+      "id": 30,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 21},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "pps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"calcs": ["mean", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "rate(ifHCInUcastPkts{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])",
+          "legendFormat": "{{ifDescr}} unicast",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "Packet Rate - Outbound",
+      "type": "timeseries",
+      "id": 31,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 21},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "pps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"calcs": ["mean", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "rate(ifHCOutUcastPkts{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])",
+          "legendFormat": "{{ifDescr}} unicast",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "Interface Errors",
+      "type": "timeseries",
+      "id": 40,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 29},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
+              {"color": "green", "value": null},
+              {"color": "red", "value": 1}
             ]
           },
-          "unit": "short"
+          "unit": "pps"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 8
-      },
-      "id": 4,
       "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus"
-          },
-          "expr": "rate(ifInErrors{device=\"rtx830\", ifDescr=~\"LAN.*|WAN.*\"}[5m])",
-          "legendFormat": "{{ifDescr}} In Errors",
+          "datasource": {"type": "prometheus"},
+          "expr": "rate(ifInErrors{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])",
+          "legendFormat": "{{ifDescr}} In",
           "refId": "A"
         },
         {
-          "datasource": {
-            "type": "prometheus"
-          },
-          "expr": "rate(ifOutErrors{device=\"rtx830\", ifDescr=~\"LAN.*|WAN.*\"}[5m])",
-          "legendFormat": "{{ifDescr}} Out Errors",
+          "datasource": {"type": "prometheus"},
+          "expr": "rate(ifOutErrors{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])",
+          "legendFormat": "{{ifDescr}} Out",
           "refId": "B"
         }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "Interface Discards",
+      "type": "timeseries",
+      "id": 41,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 29},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1}
+            ]
+          },
+          "unit": "pps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "rate(ifInDiscards{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])",
+          "legendFormat": "{{ifDescr}} In",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "rate(ifOutDiscards{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])",
+          "legendFormat": "{{ifDescr}} Out",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "Interface Status & Details",
+      "type": "table",
+      "id": 50,
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 37},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "custom": {
+            "align": "auto",
+            "cellOptions": {"type": "auto"},
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "Value #status"},
+            "properties": [
+              {"id": "displayName", "value": "Status"},
+              {
+                "id": "mappings",
+                "value": [
+                  {"type": "value", "options": {"1": {"text": "UP", "color": "green"}, "2": {"text": "DOWN", "color": "red"}}}
+                ]
+              },
+              {"id": "custom.cellOptions", "value": {"type": "color-text"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #speed"},
+            "properties": [
+              {"id": "displayName", "value": "Speed"},
+              {"id": "unit", "value": "Mbits"}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #in"},
+            "properties": [
+              {"id": "displayName", "value": "In"},
+              {"id": "unit", "value": "bps"}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #out"},
+            "properties": [
+              {"id": "displayName", "value": "Out"},
+              {"id": "unit", "value": "bps"}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "ifDescr"},
+            "properties": [{"id": "displayName", "value": "Interface"}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "ifAlias"},
+            "properties": [{"id": "displayName", "value": "Alias"}]
+          }
+        ]
+      },
+      "options": {
+        "cellHeight": "sm",
+        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "showHeader": true
+      },
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "device": true,
+              "instance": true,
+              "job": true,
+              "location": true,
+              "ifIndex": true
+            },
+            "indexByName": {
+              "ifDescr": 0,
+              "ifAlias": 1,
+              "Value #status": 2,
+              "Value #speed": 3,
+              "Value #in": 4,
+              "Value #out": 5
+            }
+          }
+        }
       ],
-      "title": "Interface Errors",
-      "type": "timeseries"
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "ifOperStatus{device=\"rtx830\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "status"
+        },
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "ifHighSpeed{device=\"rtx830\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "speed"
+        },
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "rate(ifHCInOctets{device=\"rtx830\"}[5m]) * 8",
+          "format": "table",
+          "instant": true,
+          "refId": "in"
+        },
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "rate(ifHCOutOctets{device=\"rtx830\"}[5m]) * 8",
+          "format": "table",
+          "instant": true,
+          "refId": "out"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "Virtual Interface Traffic (PP / Tunnel)",
+      "description": "PPPoE and IPIP tunnel interfaces. Adjust the regex if your ifDescr uses different naming.",
+      "type": "timeseries",
+      "id": 70,
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 47},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": true,
+            "axisColorMode": "text",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {"group": "A", "mode": "none"},
+            "thresholdsStyle": {"mode": "off"}
+          },
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "rate(ifHCInOctets{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) * 8 and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
+          "legendFormat": "{{ifDescr}} In",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "- (rate(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) * 8 and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1))",
+          "legendFormat": "{{ifDescr}} Out",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "Virtual Interface Packet Rate",
+      "type": "timeseries",
+      "id": 71,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 56},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "pps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"calcs": ["mean", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "rate(ifHCInUcastPkts{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
+          "legendFormat": "{{ifDescr}} In",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "rate(ifHCOutUcastPkts{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
+          "legendFormat": "{{ifDescr}} Out",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "Virtual Interface Status & Traffic",
+      "type": "table",
+      "id": 72,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 56},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "custom": {
+            "align": "auto",
+            "cellOptions": {"type": "auto"},
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "Value #status"},
+            "properties": [
+              {"id": "displayName", "value": "Status"},
+              {
+                "id": "mappings",
+                "value": [
+                  {"type": "value", "options": {"1": {"text": "UP", "color": "green"}, "2": {"text": "DOWN", "color": "red"}}}
+                ]
+              },
+              {"id": "custom.cellOptions", "value": {"type": "color-text"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #in"},
+            "properties": [
+              {"id": "displayName", "value": "In"},
+              {"id": "unit", "value": "bps"}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Value #out"},
+            "properties": [
+              {"id": "displayName", "value": "Out"},
+              {"id": "unit", "value": "bps"}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "ifDescr"},
+            "properties": [{"id": "displayName", "value": "Interface"}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "ifAlias"},
+            "properties": [{"id": "displayName", "value": "Alias"}]
+          }
+        ]
+      },
+      "options": {
+        "cellHeight": "sm",
+        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "showHeader": true
+      },
+      "transformations": [
+        {"id": "merge", "options": {}},
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "device": true,
+              "instance": true,
+              "job": true,
+              "location": true,
+              "ifIndex": true
+            },
+            "indexByName": {
+              "ifDescr": 0,
+              "ifAlias": 1,
+              "Value #status": 2,
+              "Value #in": 3,
+              "Value #out": 4
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "ifOperStatus{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"} == 1",
+          "format": "table",
+          "instant": true,
+          "refId": "status"
+        },
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "rate(ifHCInOctets{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) * 8 and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "in"
+        },
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "rate(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) * 8 and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "out"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "SNMP Scrape Duration",
+      "type": "timeseries",
+      "id": 60,
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 64},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 5},
+              {"color": "red", "value": 25}
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "single", "sort": "none"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "snmp_scrape_duration_seconds{job=\"snmp-rtx830\"}",
+          "legendFormat": "scrape duration",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus"},
+      "title": "SNMP Packets / Retries",
+      "type": "timeseries",
+      "id": 61,
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 64},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {"calcs": ["mean", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "none"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "snmp_scrape_packets_sent{job=\"snmp-rtx830\"}",
+          "legendFormat": "packets sent",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus"},
+          "expr": "snmp_scrape_packets_retries{job=\"snmp-rtx830\"}",
+          "legendFormat": "retries",
+          "refId": "B"
+        }
+      ]
     }
   ],
   "refresh": "30s",
   "schemaVersion": 39,
   "tags": ["rtx830", "snmp", "network"],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {"selected": true, "text": ["All"], "value": ["$__all"]},
+        "datasource": {"type": "prometheus"},
+        "definition": "label_values(ifHCInOctets{device=\"rtx830\"}, ifDescr)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Interface",
+        "multi": true,
+        "name": "interface",
+        "options": [],
+        "query": {
+          "query": "label_values(ifHCInOctets{device=\"rtx830\"}, ifDescr)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
   },
-  "time": {
-    "from": "now-6h",
-    "to": "now"
-  },
+  "time": {"from": "now-6h", "to": "now"},
   "timepicker": {},
   "timezone": "browser",
   "title": "RTX830 Network Monitoring",
   "uid": "rtx830-network",
-  "version": 1
+  "version": 3
 }
