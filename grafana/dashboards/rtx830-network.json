@@ -268,13 +268,13 @@
       "targets": [
         {
           "datasource": {"type": "prometheus"},
-          "expr": "rate(ifHCInOctets{device=\"rtx830\", ifDescr=~\"$interface\"}[5m]) * 8",
+          "expr": "rate(ifHCInOctets{device=\"rtx830\", ifDescr=~\"$interface\"}[5m]) * 8 and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "legendFormat": "{{ifDescr}} In",
           "refId": "A"
         },
         {
           "datasource": {"type": "prometheus"},
-          "expr": "-rate(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"$interface\"}[5m]) * 8",
+          "expr": "- (rate(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"$interface\"}[5m]) * 8 and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1))",
           "legendFormat": "{{ifDescr}} Out",
           "refId": "B"
         }
@@ -382,7 +382,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus"},
-          "expr": "rate(ifHCInUcastPkts{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])",
+          "expr": "rate(ifHCInUcastPkts{device=\"rtx830\", ifDescr=~\"$interface\"}[5m]) and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "legendFormat": "{{ifDescr}} unicast",
           "refId": "A"
         }
@@ -418,7 +418,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus"},
-          "expr": "rate(ifHCOutUcastPkts{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])",
+          "expr": "rate(ifHCOutUcastPkts{device=\"rtx830\", ifDescr=~\"$interface\"}[5m]) and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "legendFormat": "{{ifDescr}} unicast",
           "refId": "A"
         }
@@ -460,13 +460,13 @@
       "targets": [
         {
           "datasource": {"type": "prometheus"},
-          "expr": "rate(ifInErrors{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])",
+          "expr": "rate(ifInErrors{device=\"rtx830\", ifDescr=~\"$interface\"}[5m]) and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "legendFormat": "{{ifDescr}} In",
           "refId": "A"
         },
         {
           "datasource": {"type": "prometheus"},
-          "expr": "rate(ifOutErrors{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])",
+          "expr": "rate(ifOutErrors{device=\"rtx830\", ifDescr=~\"$interface\"}[5m]) and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "legendFormat": "{{ifDescr}} Out",
           "refId": "B"
         }
@@ -508,13 +508,13 @@
       "targets": [
         {
           "datasource": {"type": "prometheus"},
-          "expr": "rate(ifInDiscards{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])",
+          "expr": "rate(ifInDiscards{device=\"rtx830\", ifDescr=~\"$interface\"}[5m]) and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "legendFormat": "{{ifDescr}} In",
           "refId": "A"
         },
         {
           "datasource": {"type": "prometheus"},
-          "expr": "rate(ifOutDiscards{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])",
+          "expr": "rate(ifOutDiscards{device=\"rtx830\", ifDescr=~\"$interface\"}[5m]) and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "legendFormat": "{{ifDescr}} Out",
           "refId": "B"
         }
@@ -618,28 +618,28 @@
       "targets": [
         {
           "datasource": {"type": "prometheus"},
-          "expr": "ifOperStatus{device=\"rtx830\"}",
+          "expr": "ifOperStatus{device=\"rtx830\"} == 1",
           "format": "table",
           "instant": true,
           "refId": "status"
         },
         {
           "datasource": {"type": "prometheus"},
-          "expr": "ifHighSpeed{device=\"rtx830\"}",
+          "expr": "ifHighSpeed{device=\"rtx830\"} and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "format": "table",
           "instant": true,
           "refId": "speed"
         },
         {
           "datasource": {"type": "prometheus"},
-          "expr": "rate(ifHCInOctets{device=\"rtx830\"}[5m]) * 8",
+          "expr": "rate(ifHCInOctets{device=\"rtx830\"}[5m]) * 8 and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "format": "table",
           "instant": true,
           "refId": "in"
         },
         {
           "datasource": {"type": "prometheus"},
-          "expr": "rate(ifHCOutOctets{device=\"rtx830\"}[5m]) * 8",
+          "expr": "rate(ifHCOutOctets{device=\"rtx830\"}[5m]) * 8 and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "format": "table",
           "instant": true,
           "refId": "out"
