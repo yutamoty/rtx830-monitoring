@@ -686,13 +686,13 @@
       "targets": [
         {
           "datasource": {"type": "prometheus"},
-          "expr": "rate(ifHCInOctets{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) * 8",
+          "expr": "rate(ifHCInOctets{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) * 8 and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "legendFormat": "{{ifDescr}} In",
           "refId": "A"
         },
         {
           "datasource": {"type": "prometheus"},
-          "expr": "-rate(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) * 8",
+          "expr": "- (rate(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) * 8 and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1))",
           "legendFormat": "{{ifDescr}} Out",
           "refId": "B"
         }
@@ -728,13 +728,13 @@
       "targets": [
         {
           "datasource": {"type": "prometheus"},
-          "expr": "rate(ifHCInUcastPkts{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m])",
+          "expr": "rate(ifHCInUcastPkts{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "legendFormat": "{{ifDescr}} In",
           "refId": "A"
         },
         {
           "datasource": {"type": "prometheus"},
-          "expr": "rate(ifHCOutUcastPkts{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m])",
+          "expr": "rate(ifHCOutUcastPkts{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "legendFormat": "{{ifDescr}} Out",
           "refId": "B"
         }
@@ -827,21 +827,21 @@
       "targets": [
         {
           "datasource": {"type": "prometheus"},
-          "expr": "ifOperStatus{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}",
+          "expr": "ifOperStatus{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"} == 1",
           "format": "table",
           "instant": true,
           "refId": "status"
         },
         {
           "datasource": {"type": "prometheus"},
-          "expr": "rate(ifHCInOctets{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) * 8",
+          "expr": "rate(ifHCInOctets{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) * 8 and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "format": "table",
           "instant": true,
           "refId": "in"
         },
         {
           "datasource": {"type": "prometheus"},
-          "expr": "rate(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) * 8",
+          "expr": "rate(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"(?i)(pp|tunnel).*\"}[5m]) * 8 and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1)",
           "format": "table",
           "instant": true,
           "refId": "out"
