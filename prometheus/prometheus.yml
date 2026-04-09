@@ -22,6 +22,7 @@ scrape_configs:
     metrics_path: /snmp
     params:
       module: [if_mib]
+      auth: [public_v2]
       target: ["${RTX830_HOST}"]
     static_configs:
       - targets: ["localhost:9116"]

@@ -4,6 +4,20 @@
 #
 # Source: https://github.com/prometheus/snmp_exporter/blob/main/snmp.yml (if_mib module)
 
+auths:
+  public_v1:
+    community: public
+    security_level: noAuthNoPriv
+    auth_protocol: MD5
+    priv_protocol: DES
+    version: 1
+  public_v2:
+    community: public
+    security_level: noAuthNoPriv
+    auth_protocol: MD5
+    priv_protocol: DES
+    version: 2
+
 modules:
   if_mib:
     walk:
