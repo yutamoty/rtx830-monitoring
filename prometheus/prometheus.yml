@@ -1,0 +1,48 @@
+# このファイルは entrypoint.sh によって環境変数が展開されて使用されます
+# ${VAR} 形式のプレースホルダーは起動時に実際の値に置換されます
+
+global:
+  scrape_interval: 60s
+  scrape_timeout: 30s
+
+# Grafana Cloud へ Remote Write
+remote_write:
+  - url: "${GRAFANA_CLOUD_PROMETHEUS_URL}"
+    basic_auth:
+      username: "${GRAFANA_CLOUD_PROMETHEUS_USER}"
+      password: "${GRAFANA_CLOUD_API_KEY}"
+    queue_config:
+      capacity: 10000
+      max_shards: 10
+      max_samples_per_send: 5000
+
+scrape_configs:
+  # SNMP Exporter から RTX830 メトリクスを収集
+  - job_name: "snmp-rtx830"
+    metrics_path: /snmp
+    params:
+      module: [if_mib]
+      target: ["${RTX830_HOST}"]
+    static_configs:
+      - targets: ["localhost:9116"]
+        labels:
+          device: "rtx830"
+          location: "home"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+        replacement: "${RTX830_HOST}"
+      - target_label: __address__
+        replacement: "localhost:9116"
+      - source_labels: [__param_target]
+        target_label: instance
+
+  # SNMP Exporter 自身のメトリクス
+  - job_name: "snmp-exporter"
+    static_configs:
+      - targets: ["localhost:9116"]
+
+  # Prometheus 自身のメトリクス（オプション）
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]

@@ -95,9 +95,9 @@ save
   - `auth-no-priv`: 認証あり・暗号化なし
   - `auth-priv`: 認証あり・暗号化あり（推奨）
 
-### Alloy側の設定変更（SNMPv3使用時）
+### SNMP Exporter側の設定変更（SNMPv3使用時）
 
-`alloy/snmp.yml` を以下のように編集：
+SNMP Exporterのカスタム設定ファイル（`snmp.yml`）を以下のように編集：
 
 ```yaml
 rtx830:
