@@ -111,7 +111,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus"},
-          "expr": "sum(rate(ifHCInOctets{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])) * 8",
+          "expr": "sum(rate(ifHCInOctets{device=\"rtx830\", ifDescr=~\"$interface\"}[5m]) * 8 and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1))",
           "refId": "A"
         }
       ]
@@ -143,7 +143,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus"},
-          "expr": "sum(rate(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"$interface\"}[5m])) * 8",
+          "expr": "sum(rate(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"$interface\"}[5m]) * 8 and on(ifIndex, instance) (ifOperStatus{device=\"rtx830\"} == 1))",
           "refId": "A"
         }
       ]
