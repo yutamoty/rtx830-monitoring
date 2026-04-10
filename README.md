@@ -69,6 +69,11 @@ snmpv2c community read-only public
 # アクセスを許可するホスト（Raspberry Pi の固定IP）
 snmpv2c host <Raspberry_PiのIP>
 
+# PP (PPPoE) / Tunnel インターフェースを MIB-II ifTable に出す
+# （これがないと pp1 / tunnel1 がダッシュボードに出てきません）
+snmp yrifppdisplayatmib2 on
+snmp yriftunneldisplayatmib2 on
+
 # システム情報（任意）
 snmp sysname "RTX830"
 snmp syscontact "admin@example.com"

@@ -104,6 +104,12 @@ snmpv2c community read-only public
 # アクセスを許可するホスト（Raspberry Pi の固定IP）
 snmpv2c host 192.168.1.100
 
+# PP (PPPoE) / Tunnel インターフェースを標準 MIB-II ifTable に見せる
+# ⚠️ これを入れないと pp1 や tunnel1 が ifDescr / ifHCInOctets 等に出てこず、
+#    ダッシュボードの "Virtual Interface (PP/Tunnel) Traffic" パネルが空になります。
+snmp yrifppdisplayatmib2 on
+snmp yriftunneldisplayatmib2 on
+
 # システム情報（オプション: Grafana でホスト名等を表示したい場合）
 snmp sysname "RTX830"
 snmp syscontact "admin@example.com"
@@ -160,6 +166,8 @@ show config | grep -i snmp
 ```
 snmpv2c community read-only public
 snmpv2c host 192.168.1.100
+snmp yrifppdisplayatmib2 on
+snmp yriftunneldisplayatmib2 on
 snmp sysname "RTX830"
 snmp syscontact "admin@example.com"
 snmp syslocation "Home/Office"
