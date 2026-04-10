@@ -29,6 +29,12 @@ snmp community read-only your_secret_community_string
 # アクセス許可するホストの指定
 snmp host 192.168.1.100
 
+# PP (PPPoE) / Tunnel インターフェースを標準 MIB-II ifTable に見せる
+# これを有効にしないと pp1 / tunnel1 が ifDescr / ifHCInOctets 等で取得できず、
+# Grafana ダッシュボードの "Virtual Interface (PP/Tunnel) Traffic" 系パネルが空になります。
+snmp yrifppdisplayatmib2 on
+snmp yriftunneldisplayatmib2 on
+
 # システム情報の設定（オプション）
 snmp sysname "RTX830"
 snmp syscontact "admin@example.com"
@@ -48,6 +54,8 @@ show config | grep snmp
 ```
 snmp community read-only your_secret_community_string
 snmp host 192.168.1.100
+snmp yrifppdisplayatmib2 on
+snmp yriftunneldisplayatmib2 on
 snmp sysname "RTX830"
 snmp syscontact "admin@example.com"
 snmp syslocation "Home/Office"

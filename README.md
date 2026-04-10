@@ -55,19 +55,42 @@ GRAFANA_CLOUD_API_KEY=glc_xxxxxxxxxxxxx
 
 ### 3. RTX830のSNMP設定
 
-RTX830で以下を設定してください：
+RTX830 に Telnet/SSH でログインし、以下を設定してください（`<Raspberry_PiのIP>` は監視元 Raspberry Pi の**固定IP**に置き換え）：
 
 ```bash
 # 管理者モードに入る
 administrator
 
-# SNMPv2c設定
+# SNMPv2c コミュニティ文字列（read-only）
+# ⚠️ snmp/snmp.yml が community: public で固定されているため、ここも public のままにするか、
+#    変更する場合は snmp/snmp.yml 側も同じ値に揃えてください。
 snmpv2c community read-only public
-snmpv2c host <Raspberry_PiのIPアドレス>
+
+# アクセスを許可するホスト（Raspberry Pi の固定IP）
+snmpv2c host <Raspberry_PiのIP>
+
+# PP (PPPoE) / Tunnel インターフェースを MIB-II ifTable に出す
+# （これがないと pp1 / tunnel1 がダッシュボードに出てきません）
+snmp yrifppdisplayatmib2 on
+snmp yriftunneldisplayatmib2 on
+
+# システム情報（任意）
+snmp sysname "RTX830"
+snmp syscontact "admin@example.com"
+snmp syslocation "Home/Office"
 
 # 設定を保存
 save
 ```
+
+**疎通確認**（Raspberry Pi 側から実施）:
+
+```bash
+sudo apt-get install -y snmp
+snmpwalk -v2c -c public <RTX830のIP> system
+```
+
+`sysDescr` などが返ってくれば OK。タイムアウトする場合は `snmpv2c host` の IP 設定、RTX830 のフィルタ（UDP/161 を許可しているか）、community の一致を確認してください。詳細は [docs/setup-guide.md](docs/setup-guide.md#ステップ2-rtx830のsnmp設定) と [docs/rtx830-config.md](docs/rtx830-config.md) を参照。
 
 ### 4. コンテナの起動
 

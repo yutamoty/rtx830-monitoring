@@ -69,11 +69,26 @@ GRAFANA_CLOUD_API_KEY=glc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ## ステップ2: RTX830のSNMP設定
 
-### 2.1 RTX830への接続
+### 2.1 事前準備: Raspberry Pi のIPアドレス固定
+
+RTX830 側でアクセス元IPを絞るため、Raspberry Pi のIPアドレスは**固定**しておく必要があります。DHCPで変動すると `snmpv2c host` 制限に引っかかって SNMP が取れなくなります。
+
+以下のいずれかで固定してください:
+- Raspberry Pi 側で static IP を設定する
+- RTX830 の DHCP スコープで MAC アドレスに対する固定割当を設定する（`dhcp scope bind` コマンド）
+
+以降の手順では Raspberry Pi の固定IPを `192.168.1.100` として記載します。環境に合わせて読み替えてください。
+
+### 2.2 RTX830への接続
 
 Web GUI または Telnet/SSH で RTX830 に接続します。
 
-### 2.2 SNMP設定の投入
+```bash
+# SSH で接続する例
+ssh admin@192.168.1.1
+```
+
+### 2.3 SNMP設定の投入
 
 #### 基本設定（SNMPv2c）
 
@@ -81,13 +96,21 @@ Web GUI または Telnet/SSH で RTX830 に接続します。
 # 管理者モードに入る
 administrator
 
-# SNMP Community String の設定（"public"から変更することを推奨）
-snmp community read-only your_secret_community_string
+# SNMPv2c コミュニティ文字列を設定（read-only）
+# ⚠️ 本リポジトリ同梱の snmp/snmp.yml は community: public がデフォルトなので、
+#    ここを変更する場合は snmp/snmp.yml の community も同じ値に揃えてください。
+snmpv2c community read-only public
 
-# アクセス許可（Raspberry PiのIPアドレスを指定）
-snmp host 192.168.1.100
+# アクセスを許可するホスト（Raspberry Pi の固定IP）
+snmpv2c host 192.168.1.100
 
-# システム情報の設定（オプション）
+# PP (PPPoE) / Tunnel インターフェースを標準 MIB-II ifTable に見せる
+# ⚠️ これを入れないと pp1 や tunnel1 が ifDescr / ifHCInOctets 等に出てこず、
+#    ダッシュボードの "Virtual Interface (PP/Tunnel) Traffic" パネルが空になります。
+snmp yrifppdisplayatmib2 on
+snmp yriftunneldisplayatmib2 on
+
+# システム情報（オプション: Grafana でホスト名等を表示したい場合）
 snmp sysname "RTX830"
 snmp syscontact "admin@example.com"
 snmp syslocation "Home/Office"
@@ -97,35 +120,88 @@ save
 ```
 
 **セキュリティTips:**
-- `your_secret_community_string` は推測困難な文字列に変更してください
-- 本番環境では SNMPv3 の使用を推奨します
+- `public` はデフォルトのコミュニティ文字列で推測されやすいため、本番では推測困難な文字列への変更を推奨します
+- その場合は `snmp/snmp.yml` 側の `community:` も同じ値に書き換え、`docker-compose restart snmp-exporter` で反映させてください
+- より強固にしたい場合は後述の SNMPv3 を検討してください
 
 #### より安全なSNMPv3設定（推奨）
 
 ```
 # SNMPv3ユーザーの作成
-snmp user myuser auth-protocol sha auth-password MyAuthPass123 priv-protocol aes priv-password MyPrivPass123
+snmpv3 usm user 1 monitoruser sha MyAuthPass123 aes MyPrivPass123
 
-# SNMPv3アクセスグループの設定
-snmp group mygroup user myuser security-level auth-priv
+# アクセスを許可するホスト
+snmpv3 host 192.168.1.100
 
-# アクセス許可
-snmp host 192.168.1.100
+# 設定の保存
+save
 ```
 
-SNMPv3を使う場合は、後で `.env` ファイルの設定も変更します。
+SNMPv3 を使う場合は `snmp/snmp.yml` の `auths:` 節に SNMPv3 用の認証情報を追加し、`prometheus/prometheus.yml` の `params.auth` をそれを参照するよう切り替える必要があります。詳しくは [rtx830-config.md](rtx830-config.md) を参照してください。
 
-### 2.3 設定の確認
+### 2.4 フィルタ（パケットフィルタ）の確認
+
+RTX830 側で `ip lan1 filter in` などに厳しめのフィルタが設定されている場合、SNMP (UDP/161) が塞がれていることがあります。その場合は監視元からの SNMP を明示的に許可してください。
 
 ```
-show config | grep snmp
+# 既存のフィルタ番号と被らない番号を選ぶ
+ip filter 2000 pass 192.168.1.100 192.168.1.1 udp * 161
+
+# LAN側インターフェースの in フィルタ列に 2000 を追加
+#（既存の filter in 列がある場合は、その先頭に追加する）
+ip lan1 filter in 2000
+
+save
+```
+
+フィルタを弄らずにそのまま SNMP が取れるならこのステップはスキップして構いません。
+
+### 2.5 設定の確認（RTX830 側）
+
+```
+show config | grep -i snmp
 ```
 
 以下のような出力が表示されればOK：
 ```
-snmp community read-only your_secret_community_string
-snmp host 192.168.1.100
+snmpv2c community read-only public
+snmpv2c host 192.168.1.100
+snmp yrifppdisplayatmib2 on
+snmp yriftunneldisplayatmib2 on
+snmp sysname "RTX830"
+snmp syscontact "admin@example.com"
+snmp syslocation "Home/Office"
 ```
+
+### 2.6 監視ホストから疎通確認
+
+Raspberry Pi 側から実際に SNMP クエリが通るかを確認しておくと、後段のコンテナ起動後の切り分けが楽になります。
+
+```bash
+# snmp-utils のインストール（未インストールの場合）
+sudo apt-get install -y snmp
+
+# システム情報を問い合わせ
+snmpwalk -v2c -c public 192.168.1.1 system
+```
+
+以下のような応答が返ってくれば RTX830 側の設定は OK です。
+
+```
+SNMPv2-MIB::sysDescr.0 = STRING: RTX830 Rev.15.02.xx (...)
+SNMPv2-MIB::sysUpTime.0 = Timeticks: (...)
+SNMPv2-MIB::sysName.0 = STRING: RTX830
+...
+```
+
+タイムアウトする場合は次を順に確認してください:
+
+| 症状 | 確認するもの |
+|---|---|
+| `Timeout: No Response` | `snmpv2c host` に Raspberry Pi の固定IPが入っているか |
+| `Timeout: No Response` | フィルタで UDP/161 が塞がれていないか（2.4 参照） |
+| `Unknown host` | RTX830 へ `ping` が通るか、IP が正しいか |
+| community mismatch | `snmp.yml` と RTX830 の community が同一か |
 
 ---
 
