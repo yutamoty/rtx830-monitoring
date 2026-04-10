@@ -124,7 +124,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus"},
-          "expr": "sum(increase(ifHCInOctets{device=\"rtx830\", ifDescr=~\"(?i)lan2\"}[$__range]))",
+          "expr": "sum(increase(ifHCInOctets{device=\"rtx830\", ifDescr=~\"$interface\"}[$__range]))",
           "refId": "A"
         }
       ]
@@ -156,7 +156,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus"},
-          "expr": "sum(increase(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"(?i)lan2\"}[$__range]))",
+          "expr": "sum(increase(ifHCOutOctets{device=\"rtx830\", ifDescr=~\"$interface\"}[$__range]))",
           "refId": "A"
         }
       ]
