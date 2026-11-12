@@ -595,4 +595,4 @@ docker-compose up -d
 
 問題や質問がある場合：
 - GitHub Issues: https://github.com/yutamoty/rtx830-monitoring/issues
-- ドキュメント: プロジェクトの `CLAUDE.md` と `README.md` を参照
+- ドキュメント: プロジェクトの `AGENTS.md` と `README.md` を参照

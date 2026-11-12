@@ -44,7 +44,7 @@ RTX830 (SNMP) ← [SNMP Exporter] ← Raspberry Pi (Prometheus) → Grafana Clou
 
 ```
 rtx830-monitoring/
-├── CLAUDE.md                    # このファイル（プロジェクトドキュメント）
+├── AGENTS.md                    # このファイル（プロジェクトドキュメント）
 ├── README.md                    # プロジェクト説明
 ├── docker-compose.yml           # Docker Compose設定
 ├── .env.example                 # 環境変数のサンプル
