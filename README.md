@@ -191,7 +191,7 @@ docker-compose logs
 
 ```
 rtx830-monitoring/
-├── CLAUDE.md              # プロジェクト詳細ドキュメント
+├── AGENTS.md              # プロジェクト詳細ドキュメント
 ├── README.md              # このファイル
 ├── docker-compose.yml     # Docker Compose設定
 ├── .env.example           # 環境変数サンプル
